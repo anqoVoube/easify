@@ -94,14 +94,14 @@ pub fn dynamic_tuple(input: TokenStream) -> TokenStream {
 ///
 /// ```
 /// use easify_macros::dynamic_tuple;
-/// let result = smart_split("hello,my,name", ",");
+/// let result = unpack_split!("hello,my,name", ",");
 /// assert_eq!(result, ("hello", "my", "name"));
 /// ```
 ///
 /// ```
 /// use easify_macros::dynamic_tuple;
 /// let some_text = "hello,world";
-/// let result = smart_split!(some_text, 3);
+/// let result = unpack_split!(some_text, 3);
 /// assert_eq!(result, (5, 5, 5));
 /// ```
 ///
@@ -116,7 +116,7 @@ pub fn dynamic_tuple(input: TokenStream) -> TokenStream {
 /// ```
 
 #[proc_macro]
-pub fn smart_split(input: TokenStream) -> TokenStream {
+pub fn unpack_split(input: TokenStream) -> TokenStream {
     let SmartSplitParams(text, sep, count) = parse_macro_input!(input as SmartSplitParams);
     let len = count.base10_parse::<usize>().unwrap();
 
@@ -125,7 +125,7 @@ pub fn smart_split(input: TokenStream) -> TokenStream {
     let output = quote! {
         {
 
-            let mut tuple_elements = #text.split(',');
+            let mut tuple_elements = #text.split(#sep);
             (#( #tuple_elems, )*)
         }
     };
@@ -135,7 +135,7 @@ pub fn smart_split(input: TokenStream) -> TokenStream {
 // Define a struct to hold the parsed elements
 struct LetStatement {
     vars: Vec<Ident>,
-    astrix: Vec<bool>,
+    astrix: usize,
     expr: Expr,
 }
 
@@ -145,24 +145,23 @@ impl Parse for LetStatement {
         input.parse::<Token![let]>()?; // Parse the 'let' keyword
 
         let mut vars = Vec::new();
-        let mut astrix = Vec::new();
+        let mut count: usize = 0;
+        let mut astrix: usize = 0;
         // Parse variables
         loop {
-            let mut is_astrix = false;
             if input.peek(Token![*]) {
                 input.parse::<Token![*]>()?; // Parse the '*' if present
-                is_astrix = true;
+                astrix = count;
             }
             let var: Ident = input.parse()?;
             vars.push(var);
-
-            astrix.push(is_astrix);
 
             if input.peek(Token![,]) {
                 input.parse::<Token![,]>()?;
             } else {
                 break;
             }
+            count += 1;
         }
 
         input.parse::<Token![=]>()?; // Parse the '='
@@ -176,8 +175,26 @@ impl Parse for LetStatement {
 
 // Procedural macro
 #[proc_macro]
-pub fn some_macro(input: TokenStream) -> TokenStream {
-    let LetStatement { vars, astrix, .. } = parse_macro_input!(input as LetStatement);
+pub fn smart_split(input: TokenStream) -> TokenStream {
+    let LetStatement { vars, astrix, expr } = parse_macro_input!(input as LetStatement);
+    match &expr{
+        Expr::Path(path) => {
+            quote! {
+                // Here `expr` is used directly assuming it's a Vec<T>
+                for element in #expr.iter() {
+                    println!("{:?}", element);
+                }
+            }
+        },
+        Expr::Lit(expr_lit) => {
+            quote! {
+                eprintln!("{:?}", expr_lit);
+            }
+        },
+        _ => quote! {
+            eprintln!("Invalid expression"),
+        }
+    };
     eprintln!("{:?}", astrix);
     // Create a string with the variable names
     let vars_string = vars
@@ -187,32 +204,5 @@ pub fn some_macro(input: TokenStream) -> TokenStream {
         .join(", ");
 
     TokenStream::from(quote! {
-        println!("Variables: {}", #vars_string);
     })
 }
-
-/* #[proc_macro]
-pub fn some_macro_2(input: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(input as Local);
-
-    /*     let vars_string = vars
-           .iter()
-           .map(|var| var.to_string())
-           .collect::<Vec<_>>()
-           .join(", ");
-    */
-    eprintln!("{:#?}", ast);
-    TokenStream::new()
-} */
-/*     TokenStream::from(quote! {
-        println!("Variables: {}", #vars_string);
-    })
-} */
-/*
-#[proc_macro]
-pub fn unpack(input: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(input as Local);
-
-    eprintln!("{:#?}", ast);
-    TokenStream::new()
-} */
