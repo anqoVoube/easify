@@ -136,7 +136,8 @@ pub fn unpack_split(input: TokenStream) -> TokenStream {
 struct LetStatement {
     vars: Vec<Ident>,
     astrix: usize,
-    expr: Expr,
+    is_mut: bool,
+    expr: Ident,
 }
 
 // Implement custom parsing for the LetStatement
@@ -147,12 +148,21 @@ impl Parse for LetStatement {
         let mut vars = Vec::new();
         let mut count: usize = 0;
         let mut astrix: usize = 0;
+        let mut is_mut: bool = false;
         // Parse variables
         loop {
             if input.peek(Token![*]) {
                 input.parse::<Token![*]>()?; // Parse the '*' if present
                 astrix = count;
+
             }
+
+            if input.peek(Token![mut]) {
+                input.parse::<Token![mut]>()?; // Parse the '*' if present
+                is_mut = true;
+            }
+
+
             let var: Ident = input.parse()?;
             vars.push(var);
 
@@ -167,42 +177,33 @@ impl Parse for LetStatement {
         input.parse::<Token![=]>()?; // Parse the '='
 
         // Parse the right-hand side expression
-        let expr: Expr = input.parse()?;
+        let expr: Ident = input.parse()?;
 
-        Ok(LetStatement { vars, astrix, expr })
+        Ok(LetStatement { vars, astrix, is_mut, expr })
     }
 }
 
 // Procedural macro
 #[proc_macro]
 pub fn smart_split(input: TokenStream) -> TokenStream {
-    let LetStatement { vars, astrix, expr } = parse_macro_input!(input as LetStatement);
-    match &expr{
-        Expr::Path(path) => {
-            quote! {
-                // Here `expr` is used directly assuming it's a Vec<T>
-                for element in #expr.iter() {
-                    println!("{:?}", element);
-                }
+    let LetStatement { vars, astrix, is_mut, expr} = parse_macro_input!(input as LetStatement);
+    let mut values = Vec::new();
+    let a = vars.len();
+    for index in 0..a {
+        if index < astrix {
+            values.push(quote! {#expr[#index]});
+        } else if index == astrix {
+            if !is_mut{
+                values.push(quote! {&#expr[#index..#expr.len() - #a + #index + 1]});
+            } else {
+                values.push(quote! {&mut #expr[#index..#expr.len() - #a + #index + 1]});
             }
-        },
-        Expr::Lit(expr_lit) => {
-            quote! {
-                eprintln!("{:?}", expr_lit);
-            }
-        },
-        _ => quote! {
-            eprintln!("Invalid expression"),
+        } else {
+            values.push(quote! {#expr[#expr.len() - #a + #index]});
         }
-    };
-    eprintln!("{:?}", astrix);
-    // Create a string with the variable names
-    let vars_string = vars
-        .iter()
-        .map(Ident::to_string)
-        .collect::<Vec<_>>()
-        .join(", ");
-
+    }
     TokenStream::from(quote! {
+        #( let #vars = #values; )*
     })
+
 }
