@@ -1,7 +1,7 @@
 workspace = { members = ["easify-macros"] }
 [package]
 name = "easify"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["Bakhriddinov Jamoliddin"]
 description = "Development tools. Includes various helper functions and proc-macros to simplify your code and boost your development"
@@ -10,4 +10,4 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-easify-macros = { version = "0.1.0" }
+easify-macros = { version = "0.1.1" }
