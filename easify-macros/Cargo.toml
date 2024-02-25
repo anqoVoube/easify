@@ -2,6 +2,9 @@
 name = "easify-macros"
 version = "0.1.0"
 edition = "2021"
+authors = ["Bakhriddinov Jamoliddin"]
+description = "Development tools. Includes various helper functions and proc-macros to simplify your code and boost your development"
+license = "MIT"
 
 [lib]
 proc-macro = true
