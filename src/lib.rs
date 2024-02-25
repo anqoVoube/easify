@@ -1,9 +1,5 @@
-pub use easify_macros::dynamic_tuple;
+use easify_macros::{dynamic_tuple, let_unpack, unpack_split};
 
-
-pub fn add(left: usize, right: usize) -> (i32, i32, i32) {
-    dynamic_tuple!(5, 3)
-}
 
 #[cfg(test)]
 mod tests {
@@ -11,7 +7,12 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = add(1, 5);
-        assert_eq!(result, (5, 5, 5));
+        assert_eq!(dynamic_tuple!(5, 3), (5, 5, 5));
+        let unpacking = vec![5, 5, 3];
+        let_unpack!(a, *b = unpacking);
+        assert_eq!(a, 5);
+        assert_eq!(b, &vec![5, 3]);
+        let hello_text = "hello,bye";
+        assert_eq!(("hello", "bye"), unpack_split!(hello_text, ",", 2));
     }
 }

@@ -1,6 +1,8 @@
 use proc_macro::TokenStream;
 // someting goes here
+#[doc(hidden)]
 use quote::quote;
+#[doc(hidden)]
 use syn::{
     parse::Parse, parse::ParseStream, parse_macro_input, Expr, Ident, LitInt, LitStr,
     Result, Token,
