@@ -1,4 +1,4 @@
-use easify_macros::{dynamic_tuple, let_unpack, unpack_split};
+pub use easify_macros::{dynamic_tuple, let_unpack, unpack_split};
 
 
 #[cfg(test)]
