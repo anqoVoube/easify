@@ -1,9 +1,9 @@
 [package]
 name = "easify-macros"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Bakhriddinov Jamoliddin"]
-description = "Development tools. Includes various helper functions and proc-macros to simplify your code and boost your development"
+description = "A set of macros to simplify the process of writing Rust code"
 license = "MIT"
 
 [lib]

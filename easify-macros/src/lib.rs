@@ -30,7 +30,7 @@ impl Parse for SmartSplitParams {
         Ok(SmartSplitParams(text, sep, count))
     }
 }
-/// A procedural macro to sum two numeric expressions.
+/// A procedural macro to create a tuple with dynamic number of arguments.
 ///
 /// This macro takes exactly two arguments, both of which should be valid Rust expressions
 /// that evaluate to integer types. The macro will expand to the tuple, including value of first argument
