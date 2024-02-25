@@ -1,6 +1,5 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+use easify_macros::{dynamic_tuple, let_unpack, unpack_split};
+
 
 #[cfg(test)]
 mod tests {
@@ -8,7 +7,12 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+        assert_eq!(dynamic_tuple!(5, 3), (5, 5, 5));
+        let unpacking = vec![5, 5, 3];
+        let_unpack!(a, *b = unpacking);
+        assert_eq!(a, 5);
+        assert_eq!(b, &vec![5, 3]);
+        let hello_text = "hello,bye";
+        assert_eq!(("hello", "bye"), unpack_split!(hello_text, ",", 2));
     }
 }
